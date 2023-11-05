@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 import java.awt.Dimension;
 import javax.swing.ImageIcon;
 import java.lang.Math;
+import Controller.RPSGameController;
 /**
  *
  * @author Derek
@@ -17,12 +18,17 @@ public class RPSGameWindow extends javax.swing.JFrame {
     int object_amount = 50; //default=50
     private JLabel[] objects;
     private int[] object_type_counts;
+    RPSGameController game_thread;
     Random rand;
+    boolean startSim = false;
+    boolean resetSim = false;
     /**
      * Creates new form RPSGameWindow
      */
     public RPSGameWindow() {
         initComponents();
+        game_thread = new RPSGameController(this);
+        game_thread.start();
     }
     
     /**
@@ -109,104 +115,76 @@ public class RPSGameWindow extends javax.swing.JFrame {
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
-    private boolean check_uniform_class(){
+    public boolean check_uniform_class(){
         return (object_type_counts[0]==0 && object_type_counts[1]==0) ||
                (object_type_counts[0]==0 && object_type_counts[2]==0) ||
                (object_type_counts[1]==0 && object_type_counts[2]==0);
     }
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        while (!check_uniform_class()){
-            for (int i=0; i<objects.length; i++){
-                boolean salir = false;
-                //For loop with complex switch logic
-                for (int j=0; j<objects.length && !salir; j++){
-                    double distance = Math.sqrt((objects[j].getX()-objects[i].getX())*(objects[j].getX()-objects[i].getX())
-                    +(objects[j].getY()-objects[i].getY())*(objects[j].getY()-objects[i].getY()));
-                    if (distance <=70) {
-                        int first_obj_type = Integer.parseInt(objects[i].getName());
-                        int second_obj_type = Integer.parseInt(objects[j].getName());
-                        switch(first_obj_type){
-                            case 0:
-                                switch(second_obj_type){
-                                    case 0:
-                                        break;
-                                    case 1:
-                                        objects[i].setName("1");
-                                        ImageIcon imgpaper = new ImageIcon(getClass().getResource("/img/paper.png"));
-                                        objects[i].setIcon(imgpaper);
-                                        salir = true;
-                                        object_type_counts[1] += 1;
-                                        object_type_counts[0] -= 1;
-                                        break;
-                                    case 2:
-                                        objects[j].setName("0");
-                                        ImageIcon imgrock = new ImageIcon(getClass().getResource("/img/rock.png"));
-                                        objects[j].setIcon(imgrock);
-                                        object_type_counts[0] += 1;
-                                        object_type_counts[2] -= 1;
-                                        break;
-                                }
-                                break;
-                            case 1:
-                                switch(second_obj_type){
-                                    case 0:
-                                        objects[j].setName("1");
-                                        ImageIcon imgpaper = new ImageIcon(getClass().getResource("/img/paper.png"));
-                                        objects[j].setIcon(imgpaper);
-                                        object_type_counts[1] += 1;
-                                        object_type_counts[0] -= 1;
-                                        break;
-                                    case 1:
-                                        break;
-                                    case 2:
-                                        objects[i].setName("2");
-                                        ImageIcon imgscissors = new ImageIcon(getClass().getResource("/img/scissors.png"));
-                                        objects[i].setIcon(imgscissors);
-                                        salir = true;
-                                        object_type_counts[2] += 1;
-                                        object_type_counts[1] -= 1;
-                                        break;
-                                }
-                                break;
-                            case 2:
-                                switch(second_obj_type){
-                                    case 0:
-                                        objects[i].setName("0");
-                                        ImageIcon imgrock = new ImageIcon(getClass().getResource("/img/rock.png"));
-                                        objects[i].setIcon(imgrock);
-                                        salir = true;
-                                        object_type_counts[0] += 1;
-                                        object_type_counts[2] -= 1;
-                                        break;
-                                    case 1:
-                                        objects[j].setName("2");
-                                        ImageIcon imgscissors = new ImageIcon(getClass().getResource("/img/scissors.png"));
-                                        objects[j].setIcon(imgscissors);
-                                        object_type_counts[2] += 1;
-                                        object_type_counts[1] -= 1;
-                                        break;
-                                    case 2:
-                                        break;
-                                }
-                                break;
-                        }
+    public void stepSimulation(){
+        for (int i=0; i<objects.length; i++){
+            boolean salir = false;
+            for (int j=0; j<objects.length && !salir; j++){
+                double distance = Math.sqrt((objects[j].getX()-objects[i].getX())*(objects[j].getX()-objects[i].getX())
+                +(objects[j].getY()-objects[i].getY())*(objects[j].getY()-objects[i].getY()));
+                if (distance <=70) {
+                    int first_obj_type = Integer.parseInt(objects[i].getName());
+                    int second_obj_type = Integer.parseInt(objects[j].getName());
+                    switch(first_obj_type){
+                        case 0:
+                            if (second_obj_type==2){ //rock beats scissors
+                                objects[j].setName("0");
+                                ImageIcon imgrock = new ImageIcon(getClass().getResource("/img/rock.png"));
+                                objects[j].setIcon(imgrock);
+                                object_type_counts[0] += 1;
+                                object_type_counts[2] -= 1;
+                            }
+                            break;
+                        case 1: //paper beats rock
+                            if (second_obj_type == 0){
+                                objects[j].setName("1");
+                                ImageIcon imgpaper = new ImageIcon(getClass().getResource("/img/paper.png"));
+                                objects[j].setIcon(imgpaper);
+                                object_type_counts[1] += 1;
+                                object_type_counts[0] -= 1;
+                            }
+                            break;
+                        case 2: //scissors beats paper
+                            if (second_obj_type == 1) {
+                                objects[j].setName("2");
+                                ImageIcon imgscissors = new ImageIcon(getClass().getResource("/img/scissors.png"));
+                                objects[j].setIcon(imgscissors);
+                                object_type_counts[2] += 1;
+                                object_type_counts[1] -= 1;
+                            }
+                            break;
                     }
                 }
-                //Now move the object by a defined amount, maybe change to random after testing
-                int movesX = rand.nextInt(2);
-                int movesY = rand.nextInt(2);
-                Dimension size = objects[i].getPreferredSize();
-                objects[i].setBounds(((objects[i].getX()+10)*movesX)%(jPanel1.getHeight()-50), 
-                ((objects[i].getY()+10)*movesY)%(jPanel1.getWidth()-80), size.width, size.height);
-                /*try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e){
-                    JOptionPane.showMessageDialog(null, "The game was interrupted");
-                }*/
             }
+            //Now move the object by a defined amount, maybe change to random after testing
+            int movesX = rand.nextInt(2);
+            int movesY = rand.nextInt(2);
+            Dimension size = objects[i].getPreferredSize();
+            objects[i].setBounds(((objects[i].getX()+10)*movesX)%(jPanel1.getHeight()-50), 
+            ((objects[i].getY()+10)*movesY)%(jPanel1.getWidth()-80), size.width, size.height);
         }
+        jPanel1.repaint();
         //JOptionPane.showMessageDialog(null, "Piedras: "+object_type_counts[0]+ " Papeles: "+object_type_counts[1]+ " Tijeras: "
                 //+ object_type_counts[2]);
+    }
+    public void controlSim(){
+        if (resetSim){
+            this.generateElements();
+        }
+        if (startSim){
+            if (!check_uniform_class()){
+                this.stepSimulation();
+            }else{
+                this.startSim=false;
+            }
+        }
+    }
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        this.startSim = true;
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -216,9 +194,9 @@ public class RPSGameWindow extends javax.swing.JFrame {
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
-    private void generateElements(){
+    public void generateElements(){
         jPanel1.removeAll();
-        int parsed_amount = 3;
+        int parsed_amount = 50;
         try{
             parsed_amount = Integer.parseInt(jTextField1.getText());
         }catch(NumberFormatException e){
