@@ -20,8 +20,8 @@ public class RPSGameWindow extends javax.swing.JFrame {
     private int[] object_type_counts;
     RPSGameController game_thread;
     Random rand;
-    boolean startSim = false;
-    boolean resetSim = false;
+    private boolean startSim = false;
+    private boolean resetSim = true;
     /**
      * Creates new form RPSGameWindow
      */
@@ -172,8 +172,9 @@ public class RPSGameWindow extends javax.swing.JFrame {
                 //+ object_type_counts[2]);
     }
     public void controlSim(){
-        if (resetSim){
+        if (this.resetSim){
             this.generateElements();
+            resetSim = false;
         }
         if (startSim){
             if (!check_uniform_class()){
