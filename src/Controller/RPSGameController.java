@@ -19,10 +19,11 @@ public class RPSGameController extends Thread {
         try {
             while(!gameOver){
                 window.controlSim();
-                sleep(1000);
+                sleep(5);
             }
         } catch (Exception e) {
             System.err.println("Error en la ejecucion del juego");
+            System.err.println(e.getClass().getSimpleName());
         }
     
     }//fin del metodo run

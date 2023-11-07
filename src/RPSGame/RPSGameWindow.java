@@ -22,6 +22,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
     Random rand;
     private boolean startSim = false;
     private boolean resetSim = true;
+    private int counter;
     /**
      * Creates new form RPSGameWindow
      */
@@ -29,6 +30,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         initComponents();
         game_thread = new RPSGameController(this);
         game_thread.start();
+        this.counter = 0;
     }
     
     /**
@@ -121,53 +123,59 @@ public class RPSGameWindow extends javax.swing.JFrame {
                (object_type_counts[1]==0 && object_type_counts[2]==0);
     }
     public void stepSimulation(){
-        for (int i=0; i<objects.length; i++){
-            boolean salir = false;
-            for (int j=0; j<objects.length && !salir; j++){
-                double distance = Math.sqrt((objects[j].getX()-objects[i].getX())*(objects[j].getX()-objects[i].getX())
-                +(objects[j].getY()-objects[i].getY())*(objects[j].getY()-objects[i].getY()));
-                if (distance <=70) {
-                    int first_obj_type = Integer.parseInt(objects[i].getName());
-                    int second_obj_type = Integer.parseInt(objects[j].getName());
-                    switch(first_obj_type){
-                        case 0:
-                            if (second_obj_type==2){ //rock beats scissors
-                                objects[j].setName("0");
-                                ImageIcon imgrock = new ImageIcon(getClass().getResource("/img/rock.png"));
-                                objects[j].setIcon(imgrock);
-                                object_type_counts[0] += 1;
-                                object_type_counts[2] -= 1;
-                            }
-                            break;
-                        case 1: //paper beats rock
-                            if (second_obj_type == 0){
-                                objects[j].setName("1");
-                                ImageIcon imgpaper = new ImageIcon(getClass().getResource("/img/paper.png"));
-                                objects[j].setIcon(imgpaper);
-                                object_type_counts[1] += 1;
-                                object_type_counts[0] -= 1;
-                            }
-                            break;
-                        case 2: //scissors beats paper
-                            if (second_obj_type == 1) {
-                                objects[j].setName("2");
-                                ImageIcon imgscissors = new ImageIcon(getClass().getResource("/img/scissors.png"));
-                                objects[j].setIcon(imgscissors);
-                                object_type_counts[2] += 1;
-                                object_type_counts[1] -= 1;
-                            }
-                            break;
-                    }
+        //for (int i=0; i<objects.length; i++){
+        boolean salir = false;
+        counter = counter+1;
+        counter = counter%objects.length;
+        for (int j=0; j<objects.length && !salir; j++){
+            double distance = Math.sqrt((objects[j].getX()-objects[counter].getX())*(objects[j].getX()-objects[counter].getX())
+            +(objects[j].getY()-objects[counter].getY())*(objects[j].getY()-objects[counter].getY()));
+            if (distance <=60) {
+                int first_obj_type = Integer.parseInt(objects[counter].getName());
+                int second_obj_type = Integer.parseInt(objects[j].getName());
+                switch(first_obj_type){
+                    case 0:
+                        if (second_obj_type==2){ //rock beats scissors
+                            objects[j].setName("0");
+                            ImageIcon imgrock = new ImageIcon(getClass().getResource("/img/rock.png"));
+                            objects[j].setIcon(imgrock);
+                            object_type_counts[0] += 1;
+                            object_type_counts[2] -= 1;
+                        }
+                        break;
+                    case 1: 
+                        if (second_obj_type == 0){ //paper beats rock
+                            objects[j].setName("1");
+                            ImageIcon imgpaper = new ImageIcon(getClass().getResource("/img/paper.png"));
+                            objects[j].setIcon(imgpaper);
+                            object_type_counts[1] += 1;
+                            object_type_counts[0] -= 1;
+                        }
+                        break;
+                    case 2: 
+                        if (second_obj_type == 1) { //scissors beats paper
+                            objects[j].setName("2");
+                            ImageIcon imgscissors = new ImageIcon(getClass().getResource("/img/scissors.png"));
+                            objects[j].setIcon(imgscissors);
+                            object_type_counts[2] += 1;
+                            object_type_counts[1] -= 1;
+                        }
+                        break;
                 }
             }
-            //Now move the object by a defined amount, maybe change to random after testing
-            int movesX = rand.nextInt(2);
-            int movesY = rand.nextInt(2);
-            Dimension size = objects[i].getPreferredSize();
-            objects[i].setBounds(((objects[i].getX()+10)*movesX)%(jPanel1.getHeight()-50), 
-            ((objects[i].getY()+10)*movesY)%(jPanel1.getWidth()-80), size.width, size.height);
         }
-        jPanel1.repaint();
+        //Now move the object by a defined amount, maybe change to random after testing
+        Dimension size = objects[counter].getPreferredSize();
+        int xpos = -1;
+        int ypos = -1;
+        while (xpos <0 || ypos <0 || xpos>jPanel1.getWidth()-70 || ypos>jPanel1.getHeight()-70) {
+            xpos = objects[counter].getX()+rand.nextInt(20)-10;
+            ypos = objects[counter].getY()+rand.nextInt(20)-10;
+        }
+        objects[counter].setBounds(xpos, ypos, size.width, size.height);
+        //jPanel1.repaint();
+        //}
+        //jPanel1.repaint();
         //JOptionPane.showMessageDialog(null, "Piedras: "+object_type_counts[0]+ " Papeles: "+object_type_counts[1]+ " Tijeras: "
                 //+ object_type_counts[2]);
     }
@@ -232,7 +240,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
             objects[i].setIcon(img);
             objects[i].setName(""+type);
             Dimension size = objects[i].getPreferredSize();
-            objects[i].setBounds(rand.nextInt(jPanel1.getHeight()-50), rand.nextInt(jPanel1.getWidth()-80), size.width, size.height);
+            objects[i].setBounds(rand.nextInt(jPanel1.getHeight()-50), rand.nextInt(jPanel1.getWidth()-90), size.width, size.height);
             object_type_counts[type] += 1;
             jPanel1.add(objects[i]);
         }
