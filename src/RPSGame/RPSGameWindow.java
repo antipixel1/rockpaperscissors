@@ -18,10 +18,11 @@ public class RPSGameWindow extends javax.swing.JFrame {
     int object_amount = 50; //default=50
     private JLabel[] objects;
     private int[] object_type_counts;
+    private String[] object_type_names;
     RPSGameController game_thread;
-    Random rand;
-    private boolean startSim = false;
-    private boolean resetSim = true;
+    private Random rand;
+    private boolean startSim;
+    private boolean resetSim;
     private int counter;
     /**
      * Creates new form RPSGameWindow
@@ -31,6 +32,8 @@ public class RPSGameWindow extends javax.swing.JFrame {
         game_thread = new RPSGameController(this);
         game_thread.start();
         this.counter = 0;
+        this.startSim = false;
+        this.resetSim = true;
     }
     
     /**
@@ -123,7 +126,6 @@ public class RPSGameWindow extends javax.swing.JFrame {
                (object_type_counts[1]==0 && object_type_counts[2]==0);
     }
     public void stepSimulation(){
-        //for (int i=0; i<objects.length; i++){
         boolean salir = false;
         counter = counter+1;
         counter = counter%objects.length;
@@ -164,7 +166,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
                 }
             }
         }
-        //Now move the object by a defined amount, maybe change to random after testing
+        //Now move the object by a random amount
         Dimension size = objects[counter].getPreferredSize();
         int xpos = -1;
         int ypos = -1;
@@ -173,11 +175,6 @@ public class RPSGameWindow extends javax.swing.JFrame {
             ypos = objects[counter].getY()+rand.nextInt(20)-10;
         }
         objects[counter].setBounds(xpos, ypos, size.width, size.height);
-        //jPanel1.repaint();
-        //}
-        //jPanel1.repaint();
-        //JOptionPane.showMessageDialog(null, "Piedras: "+object_type_counts[0]+ " Papeles: "+object_type_counts[1]+ " Tijeras: "
-                //+ object_type_counts[2]);
     }
     public void controlSim(){
         if (this.resetSim){
@@ -188,6 +185,12 @@ public class RPSGameWindow extends javax.swing.JFrame {
             if (!check_uniform_class()){
                 this.stepSimulation();
             }else{
+                for (int i=0; i<this.object_type_counts.length; i++){
+                    if (this.object_type_counts[i] > 0) {
+                        JOptionPane.showMessageDialog(null, "" + this.object_type_names[i] + " wins!");
+                        break;
+                    }
+                }
                 this.startSim=false;
             }
         }
@@ -197,7 +200,9 @@ public class RPSGameWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        generateElements();
+        if (!this.startSim) {
+            generateElements();
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
@@ -216,6 +221,10 @@ public class RPSGameWindow extends javax.swing.JFrame {
         }
         objects = new JLabel[object_amount];
         object_type_counts = new int[3]; 
+        object_type_names = new String[3]; //make it generic
+        object_type_names[0] = "Rock";
+        object_type_names[1] = "Paper";
+        object_type_names[2] = "Scissors"; 
         //JOptionPane.showMessageDialog(null, "Cantidad actual: "+object_amount);
         rand = new Random();
         for (int i=0; i<object_amount; i++) {
@@ -246,9 +255,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         }
         jPanel1.repaint();
     }
-    private void start_sim(){
-        
-    }
+
     private void check_object_types(){ //bounds:600 570
         
     }
