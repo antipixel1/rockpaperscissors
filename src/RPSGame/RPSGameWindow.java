@@ -195,7 +195,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         Dimension size = objects[counter].getPreferredSize();
         int xpos = -1;
         int ypos = -1;
-        while (xpos <0 || ypos <0 || xpos>jPanel1.getWidth()-70 || ypos>jPanel1.getHeight()-70) {
+        while (xpos <0 || ypos <0 || xpos>jPanel1.getWidth()-20 || ypos>jPanel1.getHeight()-20) {
             xpos = objects[counter].getX()+rand.nextInt(20)-10;
             ypos = objects[counter].getY()+rand.nextInt(20)-10;
         }
@@ -249,7 +249,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
                     obj_coordinates[i] = line;
                     i++;
                 }
-                generateElementsWithCoordinates(obj_coordinates);
+                generateElementsWithCoordinates(obj_coordinates, 0);
                 reader.close();
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Error reading file!");
@@ -280,7 +280,6 @@ public class RPSGameWindow extends javax.swing.JFrame {
        }
     }//GEN-LAST:event_exportButtonActionPerformed
     public void generateElements(){
-        jPanel1.removeAll();
         int parsed_amount = 50;
         try{
             parsed_amount = Integer.parseInt(jTextField1.getText());
@@ -290,58 +289,32 @@ public class RPSGameWindow extends javax.swing.JFrame {
         if (parsed_amount>0){
             object_amount = parsed_amount;
         }
-        objects = new JLabel[object_amount];
-        object_type_counts = new int[3]; 
-        object_type_names = new String[3]; //make it generic
-        object_type_names[0] = "Rock";
-        object_type_names[1] = "Paper";
-        object_type_names[2] = "Scissors"; 
-        rand = new Random(1);
-        for (int i=0; i<object_amount; i++) {
-            int type = rand.nextInt(3);
-            String imagePath = "";
-            switch (type) {
-                case 0: {
-                    imagePath = "/img/rock.png";
-                    break;
-                }
-                case 1: {
-                    imagePath = "/img/paper.png";
-                    break;
-                }
-                case 2: {
-                    imagePath = "/img/scissors.png";
-                    break;
-                }
-            }
-            ImageIcon img = new ImageIcon(getClass().getResource(imagePath));
-            objects[i] = new JLabel("");
-            objects[i].setIcon(img);
-            objects[i].setName(""+type);
-            Dimension size = objects[i].getPreferredSize();
-            objects[i].setBounds(rand.nextInt(jPanel1.getHeight()-50), rand.nextInt(jPanel1.getWidth()-90), size.width, size.height);
-            object_type_counts[type] += 1;
-            jPanel1.add(objects[i]);
-        }
-        jPanel1.repaint();
+        generateElementsWithCoordinates(null, object_amount);
     }
     
-    public void generateElementsWithCoordinates(String[] coords){
+    public void generateElementsWithCoordinates(String[] coords, int object_amount){
         jPanel1.removeAll();
-        object_amount = coords.length;
+        if (coords!=null) {
+            object_amount = coords.length;
+        }
         objects = new JLabel[object_amount];
         object_type_counts = new int[3]; 
         object_type_names = new String[3]; //make it generic
         object_type_names[0] = "Rock";
         object_type_names[1] = "Paper";
         object_type_names[2] = "Scissors"; 
-        rand = new Random(1);
+        rand = new Random();
         for (int i=0; i<object_amount; i++) {
-            String line = coords[i];
-            String[] line_parts = coords[i].split(",", 3); //x y fig_type
-            int x = Integer.parseInt(line_parts[0]);
-            int y = Integer.parseInt(line_parts[1]);
-            int type = Integer.parseInt(line_parts[2]);
+            int x = rand.nextInt(jPanel1.getHeight()-50);
+            int y = rand.nextInt(jPanel1.getWidth()-90);
+            int type = rand.nextInt(3);
+            if (coords!=null) {
+                String line = coords[i];
+                String[] line_parts = coords[i].split(",", 3); //x y fig_type
+                x = Integer.parseInt(line_parts[0]);
+                y = Integer.parseInt(line_parts[1]);
+                type = Integer.parseInt(line_parts[2]);
+            }
             String imagePath = "";
             switch (type) {
                 case 0: {
