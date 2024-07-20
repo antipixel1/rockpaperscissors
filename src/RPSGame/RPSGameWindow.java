@@ -6,10 +6,16 @@ package RPSGame;
 import java.util.Random;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JFileChooser;
 import java.awt.Dimension;
 import javax.swing.ImageIcon;
 import java.lang.Math;
 import Controller.RPSGameController;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.File;
 /**
  *
  * @author Derek
@@ -50,6 +56,8 @@ public class RPSGameWindow extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        importButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("RockPaperScissorsSim");
@@ -58,7 +66,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 600, Short.MAX_VALUE)
+            .addGap(0, 609, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -68,11 +76,6 @@ public class RPSGameWindow extends javax.swing.JFrame {
         jLabel1.setText("RPS amount:");
 
         jTextField1.setText("50");
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
-            }
-        });
 
         jButton1.setText("Start Simulation");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -85,6 +88,21 @@ public class RPSGameWindow extends javax.swing.JFrame {
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
+            }
+        });
+
+        importButton.setText("Import");
+        importButton.setToolTipText("");
+        importButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importButtonActionPerformed(evt);
+            }
+        });
+
+        exportButton.setText("Export");
+        exportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportButtonActionPerformed(evt);
             }
         });
 
@@ -102,6 +120,10 @@ public class RPSGameWindow extends javax.swing.JFrame {
                 .addComponent(jButton1)
                 .addGap(18, 18, 18)
                 .addComponent(jButton2)
+                .addGap(18, 18, 18)
+                .addComponent(importButton)
+                .addGap(18, 18, 18)
+                .addComponent(exportButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -114,7 +136,10 @@ public class RPSGameWindow extends javax.swing.JFrame {
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jButton1))
-                    .addComponent(jButton2)))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton2)
+                        .addComponent(importButton)
+                        .addComponent(exportButton))))
         );
 
         pack();
@@ -205,16 +230,62 @@ public class RPSGameWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("."));
+        int response = fileChooser.showOpenDialog(null);
+        if (response == JFileChooser.APPROVE_OPTION){
+            //File matrix_file = new File(fileChooser.getSelectedFile().getAbsolutePath());
+            BufferedReader reader;
+            String[] obj_coordinates;
+            try {
+                reader = new BufferedReader(new FileReader(fileChooser.getSelectedFile().getAbsolutePath()));
+                String line = reader.readLine();
+                int size_coordinates = Integer.parseInt(line);
+                obj_coordinates = new String[size_coordinates];
+                int i = 0;
+                while (i<size_coordinates) {
+                    line = reader.readLine();
+                    obj_coordinates[i] = line;
+                    i++;
+                }
+                generateElementsWithCoordinates(obj_coordinates);
+                reader.close();
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Error reading file!");
+		e.printStackTrace();
+            } catch (NumberFormatException e){
+                JOptionPane.showMessageDialog(null, "File has an incorrect format!");
+                e.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_importButtonActionPerformed
+
+    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("."));
+        int response = fileChooser.showSaveDialog(null);
+        if (response == JFileChooser.APPROVE_OPTION){
+           try {
+               FileWriter matrix_file_writer = new FileWriter(fileChooser.getSelectedFile().getAbsolutePath());
+               matrix_file_writer.write(objects.length+"\n");
+               for (int i=0; i<objects.length; i++) {
+                   matrix_file_writer.write(objects[i].getX()+","+objects[i].getY()+","+objects[i].getName()+"\n");
+               }
+               matrix_file_writer.close();
+           } catch (IOException e) {
+               JOptionPane.showMessageDialog(null, "Error creating file");
+               e.printStackTrace();
+           }
+       }
+    }//GEN-LAST:event_exportButtonActionPerformed
     public void generateElements(){
         jPanel1.removeAll();
         int parsed_amount = 50;
         try{
             parsed_amount = Integer.parseInt(jTextField1.getText());
         }catch(NumberFormatException e){
-            JOptionPane.showMessageDialog(null, "Ingrese una cantidad de objetos mayor o igual a 1");
+            JOptionPane.showMessageDialog(null, "Enter a number of objects greater or equal to 1");
         }
         if (parsed_amount>0){
             object_amount = parsed_amount;
@@ -225,8 +296,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         object_type_names[0] = "Rock";
         object_type_names[1] = "Paper";
         object_type_names[2] = "Scissors"; 
-        //JOptionPane.showMessageDialog(null, "Cantidad actual: "+object_amount);
-        rand = new Random();
+        rand = new Random(1);
         for (int i=0; i<object_amount; i++) {
             int type = rand.nextInt(3);
             String imagePath = "";
@@ -255,9 +325,48 @@ public class RPSGameWindow extends javax.swing.JFrame {
         }
         jPanel1.repaint();
     }
-
-    private void check_object_types(){ //bounds:600 570
-        
+    
+    public void generateElementsWithCoordinates(String[] coords){
+        jPanel1.removeAll();
+        object_amount = coords.length;
+        objects = new JLabel[object_amount];
+        object_type_counts = new int[3]; 
+        object_type_names = new String[3]; //make it generic
+        object_type_names[0] = "Rock";
+        object_type_names[1] = "Paper";
+        object_type_names[2] = "Scissors"; 
+        rand = new Random(1);
+        for (int i=0; i<object_amount; i++) {
+            String line = coords[i];
+            String[] line_parts = coords[i].split(",", 3); //x y fig_type
+            int x = Integer.parseInt(line_parts[0]);
+            int y = Integer.parseInt(line_parts[1]);
+            int type = Integer.parseInt(line_parts[2]);
+            String imagePath = "";
+            switch (type) {
+                case 0: {
+                    imagePath = "/img/rock.png";
+                    break;
+                }
+                case 1: {
+                    imagePath = "/img/paper.png";
+                    break;
+                }
+                case 2: {
+                    imagePath = "/img/scissors.png";
+                    break;
+                }
+            }
+            ImageIcon img = new ImageIcon(getClass().getResource(imagePath));
+            objects[i] = new JLabel("");
+            objects[i].setIcon(img);
+            objects[i].setName(""+type);
+            Dimension size = objects[i].getPreferredSize();
+            objects[i].setBounds(x, y, size.width, size.height);
+            object_type_counts[type] += 1;
+            jPanel1.add(objects[i]);
+        }
+        jPanel1.repaint();
     }
     /**
      * @param args the command line arguments
@@ -296,6 +405,8 @@ public class RPSGameWindow extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton exportButton;
+    private javax.swing.JButton importButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
