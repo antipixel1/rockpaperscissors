@@ -303,7 +303,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         object_type_names[0] = "Rock";
         object_type_names[1] = "Paper";
         object_type_names[2] = "Scissors"; 
-        rand = new Random();
+        rand = new Random(1);
         for (int i=0; i<object_amount; i++) {
             int x = rand.nextInt(jPanel1.getHeight()-50);
             int y = rand.nextInt(jPanel1.getWidth()-90);
