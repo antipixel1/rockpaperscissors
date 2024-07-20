@@ -30,6 +30,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
     private boolean startSim;
     private boolean resetSim;
     private int counter;
+    private int seed;
     /**
      * Creates new form RPSGameWindow
      */
@@ -40,6 +41,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         this.counter = 0;
         this.startSim = false;
         this.resetSim = true;
+        this.seed = 0;
     }
     
     /**
@@ -163,39 +165,37 @@ public class RPSGameWindow extends javax.swing.JFrame {
                 switch(first_obj_type){
                     case 0:
                         if (second_obj_type==2){ //rock beats scissors
-                            objects[j].setName("0");
-                            ImageIcon imgrock = new ImageIcon(getClass().getResource("/img/rock.png"));
-                            objects[j].setIcon(imgrock);
-                            object_type_counts[0] += 1;
-                            object_type_counts[2] -= 1;
+                            apply_collision(j, 0, 2, "/img/rock.png");
                         }
                         break;
                     case 1: 
                         if (second_obj_type == 0){ //paper beats rock
-                            objects[j].setName("1");
-                            ImageIcon imgpaper = new ImageIcon(getClass().getResource("/img/paper.png"));
-                            objects[j].setIcon(imgpaper);
-                            object_type_counts[1] += 1;
-                            object_type_counts[0] -= 1;
+                            apply_collision(j, 1, 0, "/img/paper.png");
                         }
                         break;
                     case 2: 
                         if (second_obj_type == 1) { //scissors beats paper
-                            objects[j].setName("2");
-                            ImageIcon imgscissors = new ImageIcon(getClass().getResource("/img/scissors.png"));
-                            objects[j].setIcon(imgscissors);
-                            object_type_counts[2] += 1;
-                            object_type_counts[1] -= 1;
+                            apply_collision(j, 2, 1, "/img/scissors.png");
                         }
                         break;
                 }
             }
         }
         //Now move the object by a random amount
+        moveObjects(counter);
+    }
+    public void apply_collision(int object_index, int first_object_type, int second_object_type, String icon_path){
+        objects[object_index].setName(""+first_object_type);
+        ImageIcon img_new = new ImageIcon(getClass().getResource(icon_path));
+        objects[object_index].setIcon(img_new);
+        object_type_counts[first_object_type] += 1;
+        object_type_counts[second_object_type] -= 1;
+    }
+    public void moveObjects(int counter){
         Dimension size = objects[counter].getPreferredSize();
         int xpos = -1;
         int ypos = -1;
-        while (xpos <0 || ypos <0 || xpos>jPanel1.getWidth()-20 || ypos>jPanel1.getHeight()-20) {
+        while (xpos <0 || ypos <0 || xpos>jPanel1.getWidth()-10 || ypos>jPanel1.getHeight()-10) {
             xpos = objects[counter].getX()+rand.nextInt(20)-10;
             ypos = objects[counter].getY()+rand.nextInt(20)-10;
         }
@@ -241,7 +241,9 @@ public class RPSGameWindow extends javax.swing.JFrame {
             try {
                 reader = new BufferedReader(new FileReader(fileChooser.getSelectedFile().getAbsolutePath()));
                 String line = reader.readLine();
-                int size_coordinates = Integer.parseInt(line);
+                String[] first_line_parts = line.split(",", 2);
+                int size_coordinates = Integer.parseInt(first_line_parts[0]);
+                int seed = Integer.parseInt(first_line_parts[1]);
                 obj_coordinates = new String[size_coordinates];
                 int i = 0;
                 while (i<size_coordinates) {
@@ -249,7 +251,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
                     obj_coordinates[i] = line;
                     i++;
                 }
-                generateElementsWithCoordinates(obj_coordinates, 0);
+                generateElementsWithCoordinates(obj_coordinates, 0, seed);
                 reader.close();
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Error reading file!");
@@ -268,7 +270,7 @@ public class RPSGameWindow extends javax.swing.JFrame {
         if (response == JFileChooser.APPROVE_OPTION){
            try {
                FileWriter matrix_file_writer = new FileWriter(fileChooser.getSelectedFile().getAbsolutePath());
-               matrix_file_writer.write(objects.length+"\n");
+               matrix_file_writer.write(objects.length+","+this.seed+"\n");
                for (int i=0; i<objects.length; i++) {
                    matrix_file_writer.write(objects[i].getX()+","+objects[i].getY()+","+objects[i].getName()+"\n");
                }
@@ -289,10 +291,10 @@ public class RPSGameWindow extends javax.swing.JFrame {
         if (parsed_amount>0){
             object_amount = parsed_amount;
         }
-        generateElementsWithCoordinates(null, object_amount);
+        generateElementsWithCoordinates(null, object_amount, 0);
     }
     
-    public void generateElementsWithCoordinates(String[] coords, int object_amount){
+    public void generateElementsWithCoordinates(String[] coords, int object_amount, int seed){
         jPanel1.removeAll();
         if (coords!=null) {
             object_amount = coords.length;
@@ -303,7 +305,14 @@ public class RPSGameWindow extends javax.swing.JFrame {
         object_type_names[0] = "Rock";
         object_type_names[1] = "Paper";
         object_type_names[2] = "Scissors"; 
-        rand = new Random(1);
+        if (seed != 0) {
+            rand = new Random(seed);
+        } else {
+            rand = new Random();
+            seed = rand.nextInt(100000);
+            System.out.println(seed);
+            rand.setSeed(seed);
+        } 
         for (int i=0; i<object_amount; i++) {
             int x = rand.nextInt(jPanel1.getHeight()-50);
             int y = rand.nextInt(jPanel1.getWidth()-90);
